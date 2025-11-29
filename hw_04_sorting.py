@@ -53,7 +53,11 @@ def generate_random_list(size: int, seed: int = 0) -> List[int]:
     return [rnd.randint(-10_000_000, 10_000_000) for _ in range(size)]
 
 
-def generate_nearly_sorted_list(size: int, seed: int = 0, perturb_fraction: float = 0.01) -> List[int]:
+def generate_nearly_sorted_list(
+    size: int,
+    seed: int = 0,
+    perturb_fraction: float = 0.01,
+) -> List[int]:
     arr = list(range(size))
     rnd = random.Random(seed)
     swaps = max(1, int(size * perturb_fraction))
@@ -68,7 +72,11 @@ def generate_reverse_sorted_list(size: int) -> List[int]:
     return list(range(size, 0, -1))
 
 
-def benchmark(algorithm: Callable[[List[int]], List[int]], data: List[int], repeats: int = 3) -> float:
+def benchmark(
+    algorithm: Callable[[List[int]], List[int]],
+    data: List[int],
+    repeats: int = 3,
+) -> float:
     timer = timeit.Timer(lambda: algorithm(data))
     results = timer.repeat(repeat=repeats, number=1)
     return statistics.mean(results)
@@ -85,7 +93,10 @@ def merge_k_lists(lists: List[List[int]]) -> List[int]:
         result.append(value)
         next_index = element_index + 1
         if next_index < len(lists[list_index]):
-            heappush(heap, (lists[list_index][next_index], list_index, next_index))
+            heappush(
+                heap,
+                (lists[list_index][next_index], list_index, next_index),
+            )
     return result
 
 
@@ -102,7 +113,7 @@ def run_benchmark() -> None:
         "timsort": timsort,
     }
 
-    print("Порівняння алгоритмів сортування (час у секундах, середнє з 3 запусків)")
+    print("Порівняння алгоритмів сортування (час у секундах)")
     print("-" * 70)
     print(f"{'size':>7} | {'type':>14} | {'algorithm':>14} | {'time, s':>10}")
     print("-" * 70)
@@ -112,16 +123,35 @@ def run_benchmark() -> None:
             base_data = gen(size)
             for algo_name, algo in algorithms.items():
                 elapsed = benchmark(algo, base_data, repeats=3)
-                print(f"{size:7d} | {gen_name:14} | {algo_name:14} | {elapsed:10.6f}")
+                print(
+                    f"{size:7d} | {gen_name:14} | "
+                    f"{algo_name:14} | {elapsed:10.6f}"
+                )
     print("-" * 70)
 
 
-def demo_merge_k_lists() -> None:
+def run_tests() -> None:
+    test_data = [
+        [],
+        [1],
+        [3, 2, 1],
+        [5, 1, 3, 2, 4],
+        [10, -1, 7, 7, 0],
+    ]
+
+    for data in test_data:
+        expected = sorted(data)
+        assert insertion_sort(data) == expected
+        assert merge_sort(data) == expected
+        assert timsort(data) == expected
+
     lists = [[1, 4, 5], [1, 3, 4], [2, 6]]
-    merged = merge_k_lists(lists)
-    print("Результат merge_k_lists:", merged)
+    expected_merged = [1, 1, 2, 3, 4, 4, 5, 6]
+    assert merge_k_lists(lists) == expected_merged
+
+    print("Усі тести пройдені успішно.")
 
 
 if __name__ == "__main__":
     run_benchmark()
-    demo_merge_k_lists()
+    run_tests()
